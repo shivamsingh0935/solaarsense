@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import api from '../api';
 
 export default function SslData() {
@@ -12,106 +12,57 @@ export default function SslData() {
   const limit = 10;
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const t = setTimeout(() => {
       setLoading(true);
-      api
-        .get('/lights', { params: { page, limit, search, status } })
-        .then((res) => {
-          setLights(res.data.lights);
-          setTotal(res.data.total);
-          setError('');
-        })
+      api.get('/lights', { params: { page, limit, search, status } })
+        .then((r) => { setLights(r.data.lights); setTotal(r.data.total); setError(''); })
         .catch(() => setError('Data load nahi ho paya'))
         .finally(() => setLoading(false));
     }, 300);
-    return () => clearTimeout(timer);
+    return () => clearTimeout(t);
   }, [page, search, status]);
 
-  const totalPages = Math.max(Math.ceil(total / limit), 1);
+  const pages = Math.max(Math.ceil(total / limit), 1);
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-slate-800">SSL Data</h1>
-
-      <div className="mt-4 flex flex-wrap gap-3">
-        <input
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          placeholder="Controller ID ya Pole number search karo"
-          className="w-72 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-amber-500"
-        />
-        <select
-          value={status}
-          onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none"
-        >
-          <option value="">Sab status</option>
-          <option value="healthy">Healthy</option>
-          <option value="faulty">Faulty</option>
+      <h1 className="page-title">SSL Data</h1>
+      <div className="mt-5 flex flex-wrap gap-3">
+        <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Controller ID ya pole number" className="input w-72" />
+        <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="input">
+          <option value="">Sab status</option><option value="healthy">Healthy</option><option value="faulty">Faulty</option>
         </select>
       </div>
-
-      {error && <div className="mt-4 text-red-600">{error}</div>}
-
-      <div className="mt-4 overflow-x-auto rounded-xl bg-white shadow-sm">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 text-xs uppercase text-slate-600">
-            <tr>
-              <th className="px-4 py-3">Controller ID</th>
-              <th className="px-4 py-3">Pole</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Plugged</th>
-              <th className="px-4 py-3">Control</th>
-              <th className="px-4 py-3">DIM</th>
-              <th className="px-4 py-3">Approval</th>
-              <th className="px-4 py-3">Location</th>
-            </tr>
+      {error && <div className="mt-4 text-error-600">{error}</div>}
+      <div className="card mt-4 overflow-x-auto">
+        <table className="w-full">
+          <thead className="border-b border-gray-100 dark:border-gray-800">
+            <tr>{['Controller ID', 'Pole', 'Status', 'Plugged', 'Control', 'DIM', 'Approval', 'Location'].map((h) => <th key={h} className="th">{h}</th>)}</tr>
           </thead>
-          <tbody>
-            {loading && (
-              <tr><td colSpan="8" className="px-4 py-6 text-center text-slate-400">Loading...</td></tr>
-            )}
-            {!loading && lights.length === 0 && (
-              <tr><td colSpan="8" className="px-4 py-6 text-center text-slate-400">Koi light nahi mili</td></tr>
-            )}
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+            {loading && <tr><td colSpan="8" className="td text-center">Loading...</td></tr>}
+            {!loading && lights.length === 0 && <tr><td colSpan="8" className="td text-center">Koi light nahi mili</td></tr>}
             {!loading && lights.map((l) => (
-              <tr key={l.id} className="border-t text-slate-700">
-                <td className="px-4 py-3 font-medium">{l.controller_id || '-'}</td>
-                <td className="px-4 py-3">{l.pole_number}</td>
-                <td className="px-4 py-3">
-                  <span className={`rounded-full px-2 py-0.5 text-xs ${l.status === 'healthy' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                    {l.status}
-                  </span>
-                </td>
-                <td className="px-4 py-3">{l.is_plugged ? 'Yes' : 'No'}</td>
-                <td className="px-4 py-3">{l.control}</td>
-                <td className="px-4 py-3">{l.dim}%</td>
-                <td className="px-4 py-3 capitalize">{l.approval_status}</td>
-                <td className="px-4 py-3 text-xs">{Number(l.latitude).toFixed(4)}, {Number(l.longitude).toFixed(4)}</td>
+              <tr key={l.id}>
+                <td className="td font-medium text-gray-800 dark:text-white/90">{l.controller_id || '-'}</td>
+                <td className="td">{l.pole_number}</td>
+                <td className="td"><span className={`badge ${l.status === 'healthy' ? 'badge-ok' : 'badge-bad'}`}>{l.status}</span></td>
+                <td className="td">{l.is_plugged ? 'Yes' : 'No'}</td>
+                <td className="td">{l.control}</td>
+                <td className="td">{l.dim}%</td>
+                <td className="td capitalize">{l.approval_status}</td>
+                <td className="td text-xs">{Number(l.latitude).toFixed(4)}, {Number(l.longitude).toFixed(4)}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-
-      <div className="mt-4 flex items-center justify-between text-sm text-slate-600">
+      <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
         <div>Total: {total} lights</div>
         <div className="flex items-center gap-2">
-          <button
-            disabled={page <= 1}
-            onClick={() => setPage(page - 1)}
-            className="rounded border bg-white px-3 py-1 disabled:opacity-40"
-          >
-            Previous
-          </button>
-          <span>Page {page} / {totalPages}</span>
-          <button
-            disabled={page >= totalPages}
-            onClick={() => setPage(page + 1)}
-            className="rounded border bg-white px-3 py-1 disabled:opacity-40"
-          >
-            Next
-          </button>
+          <button className="btn-outline" disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</button>
+          <span>Page {page} / {pages}</span>
+          <button className="btn-outline" disabled={page >= pages} onClick={() => setPage(page + 1)}>Next</button>
         </div>
       </div>
     </div>

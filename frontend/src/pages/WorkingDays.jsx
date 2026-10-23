@@ -10,70 +10,46 @@ export default function WorkingDays() {
 
   useEffect(() => {
     setLoading(true);
-    api
-      .get('/reports/working-days', { params: { from, to } })
-      .then((res) => {
-        setRows(res.data.rows);
-        setError('');
-      })
+    api.get('/reports/working-days', { params: { from, to } })
+      .then((r) => { setRows(r.data.rows); setError(''); })
       .catch(() => setError('Report load nahi ho payi'))
       .finally(() => setLoading(false));
   }, [from, to]);
 
-  const totalKwh = rows.reduce((s, r) => s + r.total_kwh, 0).toFixed(2);
-  const totalHours = rows.reduce((s, r) => s + r.total_hours, 0);
+  const kwh = rows.reduce((s, r) => s + r.total_kwh, 0).toFixed(2);
+  const hrs = rows.reduce((s, r) => s + r.total_hours, 0);
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-slate-800">Light Working Days</h1>
-
-      <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
-        <label className="text-slate-600">From</label>
-        <input type="date" value={from} onChange={(e) => setFrom(e.target.value)}
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2" />
-        <label className="text-slate-600">To</label>
-        <input type="date" value={to} onChange={(e) => setTo(e.target.value)}
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2" />
-        <button onClick={() => { setFrom(''); setTo(''); }}
-          className="rounded-lg border bg-white px-3 py-2">Clear</button>
+      <h1 className="page-title">Light Working Days</h1>
+      <div className="mt-5 flex flex-wrap items-center gap-3 text-sm">
+        <span className="text-gray-500">From</span>
+        <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="input" />
+        <span className="text-gray-500">To</span>
+        <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="input" />
+        <button className="btn-outline h-11" onClick={() => { setFrom(''); setTo(''); }}>Clear</button>
       </div>
-
-      {error && <div className="mt-4 text-red-600">{error}</div>}
-
-      <div className="mt-4 overflow-x-auto rounded-xl bg-white shadow-sm">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 text-xs uppercase text-slate-600">
-            <tr>
-              <th className="px-4 py-3">Controller ID</th>
-              <th className="px-4 py-3">Pole</th>
-              <th className="px-4 py-3">Working Days</th>
-              <th className="px-4 py-3">Total Hours</th>
-              <th className="px-4 py-3">Energy (kWh)</th>
-            </tr>
+      {error && <div className="mt-4 text-error-600">{error}</div>}
+      <div className="card mt-4 overflow-x-auto">
+        <table className="w-full">
+          <thead className="border-b border-gray-100 dark:border-gray-800">
+            <tr>{['Controller ID', 'Pole', 'Working Days', 'Total Hours', 'Energy (kWh)'].map((h) => <th key={h} className="th">{h}</th>)}</tr>
           </thead>
-          <tbody>
-            {loading && (
-              <tr><td colSpan="5" className="px-4 py-6 text-center text-slate-400">Loading...</td></tr>
-            )}
-            {!loading && rows.length === 0 && (
-              <tr><td colSpan="5" className="px-4 py-6 text-center text-slate-400">Data nahi mila</td></tr>
-            )}
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+            {loading && <tr><td colSpan="5" className="td text-center">Loading...</td></tr>}
+            {!loading && rows.length === 0 && <tr><td colSpan="5" className="td text-center">Data nahi mila</td></tr>}
             {!loading && rows.map((r) => (
-              <tr key={r.id} className="border-t text-slate-700">
-                <td className="px-4 py-3 font-medium">{r.controller_id || '-'}</td>
-                <td className="px-4 py-3">{r.pole_number}</td>
-                <td className="px-4 py-3">{r.working_days}</td>
-                <td className="px-4 py-3">{r.total_hours}</td>
-                <td className="px-4 py-3">{r.total_kwh}</td>
+              <tr key={r.id}>
+                <td className="td font-medium text-gray-800 dark:text-white/90">{r.controller_id || '-'}</td>
+                <td className="td">{r.pole_number}</td><td className="td">{r.working_days}</td>
+                <td className="td">{r.total_hours}</td><td className="td">{r.total_kwh}</td>
               </tr>
             ))}
           </tbody>
           {!loading && rows.length > 0 && (
-            <tfoot className="border-t bg-slate-50 text-sm font-semibold text-slate-800">
-              <tr>
-                <td className="px-4 py-3" colSpan="3">Total</td>
-                <td className="px-4 py-3">{totalHours}</td>
-                <td className="px-4 py-3">{totalKwh}</td>
+            <tfoot className="border-t border-gray-200 dark:border-gray-800">
+              <tr className="font-semibold text-gray-800 dark:text-white/90">
+                <td className="td" colSpan="3">Total</td><td className="td">{hrs}</td><td className="td">{kwh}</td>
               </tr>
             </tfoot>
           )}

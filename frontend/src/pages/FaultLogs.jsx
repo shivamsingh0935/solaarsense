@@ -1,9 +1,7 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import api from '../api';
 
-function fmt(d) {
-  return d ? new Date(d).toLocaleString() : '-';
-}
+const fmt = (d) => (d ? new Date(d).toLocaleString() : '-');
 
 export default function FaultLogs() {
   const [rows, setRows] = useState([]);
@@ -13,67 +11,36 @@ export default function FaultLogs() {
 
   useEffect(() => {
     setLoading(true);
-    api
-      .get('/reports/fault-logs', { params: { status } })
-      .then((res) => {
-        setRows(res.data.rows);
-        setError('');
-      })
+    api.get('/reports/fault-logs', { params: { status } })
+      .then((r) => { setRows(r.data.rows); setError(''); })
       .catch(() => setError('Report load nahi ho payi'))
       .finally(() => setLoading(false));
   }, [status]);
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-slate-800">Fault Rectification Logs</h1>
-
-      <div className="mt-4">
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none"
-        >
-          <option value="">Sab</option>
-          <option value="pending">Pending</option>
-          <option value="rectified">Rectified</option>
+      <h1 className="page-title">Fault Rectification Logs</h1>
+      <div className="mt-5">
+        <select value={status} onChange={(e) => setStatus(e.target.value)} className="input">
+          <option value="">Sab</option><option value="pending">Pending</option><option value="rectified">Rectified</option>
         </select>
       </div>
-
-      {error && <div className="mt-4 text-red-600">{error}</div>}
-
-      <div className="mt-4 overflow-x-auto rounded-xl bg-white shadow-sm">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 text-xs uppercase text-slate-600">
-            <tr>
-              <th className="px-4 py-3">Controller ID</th>
-              <th className="px-4 py-3">Pole</th>
-              <th className="px-4 py-3">Fault</th>
-              <th className="px-4 py-3">Reported</th>
-              <th className="px-4 py-3">Rectified</th>
-              <th className="px-4 py-3">Rectified By</th>
-              <th className="px-4 py-3">Status</th>
-            </tr>
+      {error && <div className="mt-4 text-error-600">{error}</div>}
+      <div className="card mt-4 overflow-x-auto">
+        <table className="w-full">
+          <thead className="border-b border-gray-100 dark:border-gray-800">
+            <tr>{['Controller ID', 'Pole', 'Fault', 'Reported', 'Rectified', 'Rectified By', 'Status'].map((h) => <th key={h} className="th">{h}</th>)}</tr>
           </thead>
-          <tbody>
-            {loading && (
-              <tr><td colSpan="7" className="px-4 py-6 text-center text-slate-400">Loading...</td></tr>
-            )}
-            {!loading && rows.length === 0 && (
-              <tr><td colSpan="7" className="px-4 py-6 text-center text-slate-400">Data nahi mila</td></tr>
-            )}
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+            {loading && <tr><td colSpan="7" className="td text-center">Loading...</td></tr>}
+            {!loading && rows.length === 0 && <tr><td colSpan="7" className="td text-center">Data nahi mila</td></tr>}
             {!loading && rows.map((r) => (
-              <tr key={r.id} className="border-t text-slate-700">
-                <td className="px-4 py-3 font-medium">{r.controller_id || '-'}</td>
-                <td className="px-4 py-3">{r.pole_number}</td>
-                <td className="px-4 py-3">{r.fault_type}</td>
-                <td className="px-4 py-3">{fmt(r.reported_at)}</td>
-                <td className="px-4 py-3">{fmt(r.rectified_at)}</td>
-                <td className="px-4 py-3">{r.rectified_by || '-'}</td>
-                <td className="px-4 py-3">
-                  <span className={`rounded-full px-2 py-0.5 text-xs ${r.rectified_at ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                    {r.rectified_at ? 'Rectified' : 'Pending'}
-                  </span>
-                </td>
+              <tr key={r.id}>
+                <td className="td font-medium text-gray-800 dark:text-white/90">{r.controller_id || '-'}</td>
+                <td className="td">{r.pole_number}</td><td className="td">{r.fault_type}</td>
+                <td className="td">{fmt(r.reported_at)}</td><td className="td">{fmt(r.rectified_at)}</td>
+                <td className="td">{r.rectified_by || '-'}</td>
+                <td className="td"><span className={`badge ${r.rectified_at ? 'badge-ok' : 'badge-bad'}`}>{r.rectified_at ? 'Rectified' : 'Pending'}</span></td>
               </tr>
             ))}
           </tbody>

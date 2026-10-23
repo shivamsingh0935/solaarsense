@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, Tooltip } from 'recharts';
+import { Lightbulb, CheckCircle2, AlertTriangle, MapPin, Building2, Landmark, Home, Leaf, Zap, Unplug } from 'lucide-react';
 import api from '../api';
 import StatCard from '../components/StatCard';
 
@@ -9,135 +10,107 @@ export default function Dashboard() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => {
-    api
-      .get('/dashboard')
-      .then((res) => setData(res.data))
-      .catch((err) => {
-        if (err.response?.status === 401) {
-          localStorage.clear();
-          window.location.href = '/login';
-        } else {
-          setError('Dashboard data load nahi ho paya');
-        }
-      });
+    api.get('/dashboard').then((r) => setData(r.data)).catch((err) => {
+      if (err.response?.status === 401) { localStorage.clear(); window.location.href = '/login'; }
+      else setError('Dashboard data load nahi ho paya');
+    });
   }, []);
 
-  if (error) return <div className="text-red-600">{error}</div>;
-  if (!data) return <div className="text-slate-500">Loading...</div>;
+  if (error) return <div className="text-error-600">{error}</div>;
+  if (!data) return (
+    <div>
+      <div className="shimmer h-6 w-48 rounded" />
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        {Array.from({ length: 10 }).map((_, i) => <div key={i} className="shimmer h-36 rounded-2xl" />)}
+      </div>
+      <div className="mt-6 grid gap-4 xl:grid-cols-3">
+        <div className="shimmer h-72 rounded-2xl" /><div className="shimmer h-72 rounded-2xl xl:col-span-2" />
+      </div>
+    </div>
+  );
 
   const c = data.cards;
-
-  const rows = [
-    [
-      { label: 'Solar Street Lights', value: c.solarStreetLights, bg: 'bg-yellow-100', iconBg: 'bg-lime-400', icon: '💡' },
-      { label: 'Healthy Solar Street Lights', value: c.healthyLights, bg: 'bg-green-200', iconBg: 'bg-green-300', icon: '✅' },
-      { label: 'Faulty Solar Street Lights', value: c.faultyLights, bg: 'bg-red-200', iconBg: 'bg-red-300', icon: '⚠️' },
-    ],
-    [
-      { label: 'Total Districts', value: c.districts, bg: 'bg-amber-100', iconBg: 'bg-amber-200', icon: '🗺️' },
-      { label: 'Total Blocks', value: c.blocks, bg: 'bg-emerald-100', iconBg: 'bg-emerald-200', icon: '🏘️' },
-      { label: 'Total Panchayats', value: c.panchayats, bg: 'bg-pink-100', iconBg: 'bg-pink-200', icon: '🏛️' },
-    ],
-    [
-      { label: 'Total Wards', value: c.wards, bg: 'bg-lime-100', iconBg: 'bg-lime-200', icon: '📍' },
-      { label: 'CO2 Emission Reduced KG', value: c.co2ReducedKg, bg: 'bg-purple-200', iconBg: 'bg-purple-300', icon: '🌱' },
-      { label: 'Energy Savings KWH', value: c.energySavingsKwh, bg: 'bg-stone-100', iconBg: 'bg-yellow-100', icon: '⚡' },
-    ],
-    [{ label: 'Unplugged SSL Lights', value: c.unpluggedLights, bg: 'bg-orange-100', iconBg: 'bg-orange-200', icon: '🔌' }],
+  const cards = [
+    { label: 'Solar Street Lights', value: c.solarStreetLights, icon: Lightbulb, tone: 'brand' },
+    { label: 'Healthy Lights', value: c.healthyLights, icon: CheckCircle2, tone: 'ok' },
+    { label: 'Faulty Lights', value: c.faultyLights, icon: AlertTriangle, tone: 'bad' },
+    { label: 'Unplugged Lights', value: c.unpluggedLights, icon: Unplug, tone: 'warn' },
+    { label: 'Total Districts', value: c.districts, icon: MapPin, tone: 'gray' },
+    { label: 'Total Blocks', value: c.blocks, icon: Building2, tone: 'gray' },
+    { label: 'Total Panchayats', value: c.panchayats, icon: Landmark, tone: 'gray' },
+    { label: 'Total Wards', value: c.wards, icon: Home, tone: 'gray' },
+    { label: 'CO2 Reduced (kg)', value: c.co2ReducedKg, icon: Leaf, tone: 'ok' },
+    { label: 'Energy Savings (kWh)', value: c.energySavingsKwh, icon: Zap, tone: 'warn' },
   ];
 
-  const pieData = [
-    { name: 'Healthy SSL Controllers', value: data.pie.healthy, color: '#14b8a6' },
-    { name: 'Faulty SSL Controllers', value: data.pie.faulty, color: '#ef4444' },
-  ];
-  const pieTotal = data.pie.healthy + data.pie.faulty;
-  const pieChartData = pieTotal === 0 ? [{ name: 'No data', value: 1, color: '#cbd5e1' }] : pieData.filter((d) => d.value > 0);
-
+  const total = data.pie.healthy + data.pie.faulty;
+  const pie = total === 0
+    ? [{ name: 'No data', value: 1, color: '#e4e7ec' }]
+    : [
+        { name: 'Healthy', value: data.pie.healthy, color: '#12b76a' },
+        { name: 'Faulty', value: data.pie.faulty, color: '#f04438' },
+      ].filter((d) => d.value > 0);
   const lu = data.lastUpdatedController;
 
   return (
     <div>
-      <h1 className="text-base font-semibold text-slate-800">Hi, {user.name}!</h1>
-      <p className="text-sm text-slate-500">Here's what's happening on your dashboard today.</p>
+      <h1 className="page-title">Hi, {user.name}!</h1>
+      <p className="mt-1 text-sm text-gray-500">Aaj aapke dashboard par ye chal raha hai.</p>
 
-      <div className="mx-auto mt-6 max-w-3xl space-y-4">
-        {rows.map((row, i) => (
-          <div key={i} className={`grid gap-3 ${row.length === 1 ? 'mx-auto w-1/3' : 'grid-cols-3'}`}>
-            {row.map((card) => (
-              <StatCard key={card.label} {...card} />
-            ))}
-          </div>
-        ))}
-
-        <div className="mx-auto w-72 rounded bg-sky-100 p-4">
-          <PieChart width={240} height={170}>
-            <Pie data={pieChartData} dataKey="value" cx="50%" cy="50%" outerRadius={70} stroke="none">
-              {pieChartData.map((d, i) => (
-                <Cell key={i} fill={d.color} />
-              ))}
-            </Pie>
-            <Tooltip />
-          </PieChart>
-          <div className="mt-1 space-y-1 text-xs text-slate-500">
-            <div className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-teal-500" /> Healthy SSL Controllers ({data.pie.healthy})
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-red-500" /> Faulty SSL Controllers ({data.pie.faulty})
-            </div>
-          </div>
-        </div>
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        {cards.map((x, i) => <StatCard key={x.label} index={i} {...x} />)}
       </div>
 
-      <div className="mt-8 grid gap-4 lg:grid-cols-2">
-        <div className="rounded bg-white p-4 shadow-sm">
-          <div className="mb-3 text-center text-sm text-slate-600">Last 5 added controllers</div>
+      <div className="mt-6 grid gap-4 xl:grid-cols-3">
+        <div className="card fade-up p-6" style={{ '--i': 10 }}>
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">Controller health</h2>
+          <div className="flex justify-center">
+            <PieChart width={240} height={200}>
+              <Pie data={pie} dataKey="value" innerRadius={55} outerRadius={85} stroke="none" isAnimationActive animationDuration={1000}>
+                {pie.map((d, i) => <Cell key={i} fill={d.color} />)}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </div>
+          <div className="flex justify-center gap-6 text-sm text-gray-500">
+            <span className="flex items-center gap-2"><i className="h-2.5 w-2.5 rounded-full bg-success-500" />Healthy ({data.pie.healthy})</span>
+            <span className="flex items-center gap-2"><i className="h-2.5 w-2.5 rounded-full bg-error-500" />Faulty ({data.pie.faulty})</span>
+          </div>
+        </div>
+
+        <div className="card fade-up overflow-hidden xl:col-span-2" style={{ '--i': 11 }}>
+          <div className="p-6 pb-3 text-lg font-semibold text-gray-800 dark:text-white/90">Last 5 added controllers</div>
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="border-b text-xs font-semibold text-slate-800">
-                  <th className="py-2">Controller Id</th>
-                  <th>Status</th>
-                  <th>Fetch Interval</th>
-                  <th>Control</th>
-                  <th>DIM</th>
-                </tr>
+            <table className="w-full">
+              <thead className="border-y border-gray-100 dark:border-gray-800">
+                <tr><th className="th">Controller Id</th><th className="th">Status</th><th className="th">Fetch Interval</th><th className="th">Control</th><th className="th">DIM</th></tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {data.lastAddedControllers.map((r) => (
-                  <tr key={r.controller_id} className="border-b last:border-0 text-slate-700">
-                    <td className="py-2">{r.controller_id}</td>
-                    <td className={r.status === 'healthy' ? 'text-green-600' : 'text-red-600'}>{r.status}</td>
-                    <td>{r.fetch_interval} min</td>
-                    <td>{r.control}</td>
-                    <td>{r.dim}%</td>
+                  <tr key={r.controller_id}>
+                    <td className="td font-medium text-gray-800 dark:text-white/90">{r.controller_id}</td>
+                    <td className="td"><span className={`badge ${r.status === 'healthy' ? 'badge-ok' : 'badge-bad'}`}>{r.status}</span></td>
+                    <td className="td">{r.fetch_interval} min</td>
+                    <td className="td">{r.control}</td>
+                    <td className="td">{r.dim}%</td>
                   </tr>
                 ))}
-                {data.lastAddedControllers.length === 0 && (
-                  <tr>
-                    <td colSpan="5" className="py-4 text-center text-slate-400">Koi controller nahi mila</td>
-                  </tr>
-                )}
+                {data.lastAddedControllers.length === 0 && <tr><td colSpan="5" className="td text-center">Koi controller nahi mila</td></tr>}
               </tbody>
             </table>
           </div>
         </div>
+      </div>
 
-        <div className="rounded bg-white p-4 shadow-sm">
-          <div className="mb-3 text-center text-sm text-slate-600">Last updated controller</div>
-          {lu ? (
-            <div className="space-y-2 text-sm text-slate-700">
-              <div><b>Controller Id:</b> {lu.controller_id}</div>
-              <div><b>Status:</b> {lu.status}</div>
-              <div><b>Fetch Interval:</b> {lu.fetch_interval} min</div>
-              <div><b>Control:</b> {lu.control}</div>
-              <div><b>DIM:</b> {lu.dim}%</div>
-              <div><b>Last updated:</b> {new Date(lu.last_updated).toLocaleString()}</div>
-            </div>
-          ) : (
-            <div className="py-4 text-center text-slate-400">Data nahi hai</div>
-          )}
-        </div>
+      <div className="card fade-up mt-4 p-6" style={{ '--i': 12 }}>
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">Last updated controller</h2>
+        {lu ? (
+          <div className="mt-4 grid gap-4 text-sm sm:grid-cols-3 lg:grid-cols-6">
+            {[['Controller Id', lu.controller_id], ['Status', lu.status], ['Fetch Interval', `${lu.fetch_interval} min`], ['Control', lu.control], ['DIM', `${lu.dim}%`], ['Updated', new Date(lu.last_updated).toLocaleString()]].map(([k, v]) => (
+              <div key={k}><div className="text-gray-500">{k}</div><div className="mt-1 font-medium text-gray-800 dark:text-white/90">{v}</div></div>
+            ))}
+          </div>
+        ) : <div className="mt-3 text-gray-500">Data nahi hai</div>}
       </div>
     </div>
   );
