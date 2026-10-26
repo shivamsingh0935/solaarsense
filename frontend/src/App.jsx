@@ -6,6 +6,7 @@ import SslData from './pages/SslData';
 import WorkingDays from './pages/WorkingDays';
 import FaultLogs from './pages/FaultLogs';
 import UsersPage from './pages/UsersPage';
+import BulkApprove from './pages/BulkApprove';
 import Layout from './components/Layout';
 
 function Protected({ children }) {
@@ -19,7 +20,7 @@ export default function App() {
       <Route path="/" element={<Protected><Layout /></Protected>}>
         <Route index element={<Dashboard />} />
         <Route path="ssl-data" element={<SslData />} />
-        <Route path="bulk-approve" element={<Placeholder title="Bulk Approve" />} />
+        <Route path="bulk-approve" element={<BulkApprove />} />
         <Route path="fe-submissions" element={<Placeholder title="Field Engineer Submissions" />} />
         <Route path="swap-requests" element={<Placeholder title="Swap Requests" />} />
         <Route path="lights-location" element={<Placeholder title="Lights Location" />} />
