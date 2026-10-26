@@ -1,29 +1,31 @@
-name: Mera Pehla Automation
+name: Run Automated Tests
 
-# 1. Trigger (Kab chalega?)
 on:
   push:
-    branches: [ "main" ] # Jab bhi main branch par code push ho
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main" ]
 
-# 2. Jobs (Kya chalega?)
 jobs:
-  build:
-    runs-on: ubuntu-latest # Kaunsa server use karna hai
+  test:
+    runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Repository ka code runner par checkout karna
-      - name: Check out code
+      # 1. Code ko checkout karo
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Ek simple command run karna
-      - name: Run a simple command
-        run: echo "Hello Shivam! GitHub Actions successfully chal gaya!"
-
-      # Step 3: Node environment setup karna (Optional example)
+      # 2. Node.js environment setup karo (agar aap Node.js use kar rahe hain)
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
-      - name: Check Node version
-        run: node -v
+      # 3. Dependencies install karo
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. Tests run karo
+      - name: Run test script
+        run: npm test
