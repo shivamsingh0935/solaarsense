@@ -1,0 +1,29 @@
+name: Mera Pehla Automation
+
+# 1. Trigger (Kab chalega?)
+on:
+  push:
+    branches: [ "main" ] # Jab bhi main branch par code push ho
+
+# 2. Jobs (Kya chalega?)
+jobs:
+  build:
+    runs-on: ubuntu-latest # Kaunsa server use karna hai
+
+    steps:
+      # Step 1: Repository ka code runner par checkout karna
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      # Step 2: Ek simple command run karna
+      - name: Run a simple command
+        run: echo "Hello Shivam! GitHub Actions successfully chal gaya!"
+
+      # Step 3: Node environment setup karna (Optional example)
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check Node version
+        run: node -v
