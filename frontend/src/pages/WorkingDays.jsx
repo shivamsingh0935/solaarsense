@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../api';
+import useLive from '../hooks/useLive';
 
 export default function WorkingDays() {
   const [rows, setRows] = useState([]);
@@ -7,6 +8,7 @@ export default function WorkingDays() {
   const [to, setTo] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     setLoading(true);
@@ -14,7 +16,9 @@ export default function WorkingDays() {
       .then((r) => { setRows(r.data.rows); setError(''); })
       .catch(() => setError('Report load nahi ho payi'))
       .finally(() => setLoading(false));
-  }, [from, to]);
+  }, [from, to, reload]);
+
+  useLive(() => setReload((n) => n + 1));
 
   const kwh = rows.reduce((s, r) => s + r.total_kwh, 0).toFixed(2);
   const hrs = rows.reduce((s, r) => s + r.total_hours, 0);

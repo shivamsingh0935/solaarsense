@@ -4,3 +4,5 @@ dist
 *.log
 
 *.sql
+# pg_dump backups (data ke saath) ignore, par schema migrations commit hone chahiye
+!backend/migrations/*.sql

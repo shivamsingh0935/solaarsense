@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../api';
+import useLive from '../hooks/useLive';
 import { toast } from '../components/Toast';
 
 const empty = { name: '', username: '', password: '', phone: '' };
@@ -21,6 +22,7 @@ export default function UsersPage({ role, title }) {
       .finally(() => setLoading(false));
   };
   useEffect(() => { load(); setShow(false); }, [role]);
+  useLive(load);
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 

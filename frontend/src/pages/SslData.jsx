@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState } from 'react';
 import { Plus, X, Pencil, Trash2 } from 'lucide-react';
 import api from '../api';
+import useLive from '../hooks/useLive';
 import { toast } from '../components/Toast';
 
 const emptyForm = {
@@ -44,6 +45,8 @@ export default function SslData() {
     }, 300);
     return () => clearTimeout(t);
   }, [page, search, status, reload]);
+
+  useLive(() => setReload((n) => n + 1));
 
   const pages = Math.max(Math.ceil(total / limit), 1);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });

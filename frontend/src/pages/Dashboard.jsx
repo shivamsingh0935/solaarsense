@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { Lightbulb, CheckCircle2, AlertTriangle, MapPin, Building2, Landmark, Home, Leaf, Zap, Unplug } from 'lucide-react';
 import api from '../api';
+import useLive from '../hooks/useLive';
 import StatCard from '../components/StatCard';
 
 export default function Dashboard() {
@@ -9,12 +10,19 @@ export default function Dashboard() {
   const [error, setError] = useState('');
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
+  const load = () => {
+    api.get('/dashboard')
+      .then((r) => { setData(r.data); setError(''); })
+      .catch((err) => {
+        if (err.response?.status === 401) { localStorage.clear(); window.location.href = '/login'; }
+        else setError('Dashboard data load nahi ho paya');
+      });
+  };
+
   useEffect(() => {
-    api.get('/dashboard').then((r) => setData(r.data)).catch((err) => {
-      if (err.response?.status === 401) { localStorage.clear(); window.location.href = '/login'; }
-      else setError('Dashboard data load nahi ho paya');
-    });
+    load();
   }, []);
+  useLive(load);
 
   if (error) return <div className="text-error-600">{error}</div>;
   if (!data) return (

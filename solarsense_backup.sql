@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict OdXSTOZyobqQHsJUEMmxz0D55XTUWEOAEkefPisJDS46uFw6vIpK2D4kewDskci
+\restrict fTrTHQo3COiS7X4m86gVYsOylu4NpqvmJWfyKJfZM6C9M4sgQhiRnDlNdnQVZHH
 
 -- Dumped from database version 17.11
 -- Dumped by pg_dump version 17.11
@@ -498,6 +498,13 @@ COPY public.controllers (id, controller_id, status, fetch_interval, control, dim
 4	SSL-1004	healthy	15	OFF	0	2026-10-19 12:43:06.704181	2026-10-19 12:43:06.704181
 5	SSL-1005	healthy	30	ON	60	2026-10-19 12:43:06.704181	2026-10-19 12:43:06.704181
 6	SSL-1006	healthy	15	ON	100	2026-10-19 12:43:06.704181	2026-10-19 12:43:06.704181
+9	SSL-2001	healthy	15	ON	5	2026-10-23 17:23:22.081004	2026-10-23 17:23:22.081004
+13	SSL-4001	healthy	15	ON	100	2026-10-26 16:52:24.62667	2026-10-26 16:52:24.62667
+14	SSL-4002	healthy	15	ON	100	2026-10-26 16:52:24.62667	2026-10-26 16:52:24.62667
+12	SSL-3003	faulty	15	OFF	100	2026-10-26 17:22:54.950105	2026-10-26 16:52:24.62667
+11	SSL-3002	faulty	15	ON	100	2026-10-26 17:51:41.343692	2026-10-26 16:52:24.62667
+10	SSL-3001	faulty	15	ON	100	2026-10-26 17:51:45.371068	2026-10-26 16:52:24.62667
+15	SSL-6006	healthy	15	ON	60	2026-10-26 17:52:43.196848	2026-10-26 17:52:43.196848
 \.
 
 
@@ -525,6 +532,9 @@ COPY public.fault_logs (id, light_id, fault_type, reported_at, rectified_at, rec
 --
 
 COPY public.fe_submissions (id, engineer_id, light_id, remarks, photo_url, status, submitted_at) FROM stdin;
+1	2	1	Naya controller laga diya	\N	pending	2026-10-26 16:52:24.62667
+2	2	2	Battery badli	\N	pending	2026-10-26 16:52:24.62667
+3	2	3	Panel saaf kiya	\N	pending	2026-10-26 16:52:24.62667
 \.
 
 
@@ -553,6 +563,11 @@ COPY public.lights (id, controller_id, customer_id, ward_id, pole_number, latitu
 4	4	1	\N	POLE-4	28.6179000	77.2130000	healthy	f	approved	\N	2026-10-19 12:43:06.704181
 5	5	1	\N	POLE-5	28.6189000	77.2140000	healthy	f	approved	\N	2026-10-19 12:43:06.704181
 6	6	1	\N	POLE-6	28.6199000	77.2150000	healthy	f	approved	\N	2026-10-19 12:43:06.704181
+9	9	1	\N	POLE-20	28.6300000	77.2300000	healthy	t	approved	\N	2026-10-23 17:23:22.081004
+12	12	1	\N	POLE-3003	28.6400000	77.2300000	faulty	t	pending	\N	2026-10-26 16:52:24.62667
+11	11	1	\N	POLE-3002	28.6400000	77.2300000	faulty	t	pending	\N	2026-10-26 16:52:24.62667
+10	10	1	\N	POLE-3001	28.6400000	77.2300000	faulty	t	pending	\N	2026-10-26 16:52:24.62667
+13	15	1	\N	POLE-7007	89.9900000	67.8800000	healthy	t	approved	\N	2026-10-26 17:52:43.196848
 \.
 
 
@@ -569,6 +584,8 @@ COPY public.panchayats (id, block_id, name) FROM stdin;
 --
 
 COPY public.swap_requests (id, light_id, old_controller_id, new_controller_id, requested_by, status, created_at) FROM stdin;
+1	4	4	13	2	pending	2026-10-26 16:52:24.62667
+2	5	5	14	2	pending	2026-10-26 16:52:24.62667
 \.
 
 
@@ -602,7 +619,7 @@ SELECT pg_catalog.setval('public.blocks_id_seq', 1, false);
 -- Name: controllers_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.controllers_id_seq', 6, true);
+SELECT pg_catalog.setval('public.controllers_id_seq', 15, true);
 
 
 --
@@ -623,7 +640,7 @@ SELECT pg_catalog.setval('public.fault_logs_id_seq', 3, true);
 -- Name: fe_submissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.fe_submissions_id_seq', 1, false);
+SELECT pg_catalog.setval('public.fe_submissions_id_seq', 3, true);
 
 
 --
@@ -637,7 +654,7 @@ SELECT pg_catalog.setval('public.light_working_days_id_seq', 6, true);
 -- Name: lights_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.lights_id_seq', 6, true);
+SELECT pg_catalog.setval('public.lights_id_seq', 13, true);
 
 
 --
@@ -651,7 +668,7 @@ SELECT pg_catalog.setval('public.panchayats_id_seq', 1, false);
 -- Name: swap_requests_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.swap_requests_id_seq', 1, false);
+SELECT pg_catalog.setval('public.swap_requests_id_seq', 2, true);
 
 
 --
@@ -912,5 +929,5 @@ ALTER TABLE ONLY public.wards
 -- PostgreSQL database dump complete
 --
 
-\unrestrict OdXSTOZyobqQHsJUEMmxz0D55XTUWEOAEkefPisJDS46uFw6vIpK2D4kewDskci
+\unrestrict fTrTHQo3COiS7X4m86gVYsOylu4NpqvmJWfyKJfZM6C9M4sgQhiRnDlNdnQVZHH
 

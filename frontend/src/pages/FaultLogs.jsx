@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../api';
+import useLive from '../hooks/useLive';
 
 const fmt = (d) => (d ? new Date(d).toLocaleString() : '-');
 
@@ -8,6 +9,7 @@ export default function FaultLogs() {
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     setLoading(true);
@@ -15,7 +17,9 @@ export default function FaultLogs() {
       .then((r) => { setRows(r.data.rows); setError(''); })
       .catch(() => setError('Report load nahi ho payi'))
       .finally(() => setLoading(false));
-  }, [status]);
+  }, [status, reload]);
+
+  useLive(() => setReload((n) => n + 1));
 
   return (
     <div>

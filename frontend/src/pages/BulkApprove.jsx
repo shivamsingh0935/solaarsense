@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState } from 'react';
 import { Check, X } from 'lucide-react';
 import api from '../api';
+import useLive from '../hooks/useLive';
 import { toast } from '../components/Toast';
 
 export default function BulkApprove() {
@@ -21,6 +22,7 @@ export default function BulkApprove() {
       .finally(() => setLoading(false));
   };
   useEffect(load, []);
+  useLive(load);
 
   const allSelected = lights.length > 0 && picked.length === lights.length;
   const toggleAll = () => setPicked(allSelected ? [] : lights.map((l) => l.id));
