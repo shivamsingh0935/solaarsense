@@ -48,7 +48,7 @@ export default function Dashboard() {
     { label: 'Total Panchayats', value: c.panchayats, icon: Landmark, tone: 'gray' },
     { label: 'Total Wards', value: c.wards, icon: Home, tone: 'gray' },
     { label: 'CO2 Reduced (kg)', value: c.co2ReducedKg, icon: Leaf, tone: 'ok' },
-    { label: 'Energy Savings (kWh)', value: c.energySavingsKwh, icon: Zap, tone: 'warn' },
+    { label: 'Energy Savings (kWh)', value: c.energySavingsKwh, icon: Zap, tone: 'ok' },
   ];
 
   const total = data.pie.healthy + data.pie.faulty;

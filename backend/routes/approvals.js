@@ -6,7 +6,7 @@ const router = express.Router();
 
 async function getOwnerId(req) {
   if (req.user.role === 'admin') return null;
-  if (req.user.role === 'sub_user') {
+  if (req.user.role === 'sub_user' || req.user.role === 'field_engineer') {
     const r = await pool.query('SELECT parent_id FROM users WHERE id = $1', [req.user.id]);
     return r.rows[0]?.parent_id ?? -1;
   }
@@ -113,6 +113,38 @@ router.get('/submissions', auth, async (req, res) => {
   }
 });
 
+router.post('/submissions', auth, async (req, res) => {
+  if (req.user.role !== 'field_engineer') {
+    return res.status(403).json({ message: 'Sirf field engineer submission bhej sakta hai' });
+  }
+  try {
+    const { light_id, remarks, photo_url } = req.body;
+    if (!Number.isInteger(Number(light_id))) {
+      return res.status(400).json({ message: 'Light chuno' });
+    }
+    const owner = await getOwnerId(req);
+    const params = [Number(light_id)];
+    let extra = '';
+    if (owner !== null) {
+      params.push(owner);
+      extra = ' AND l.customer_id = $2';
+    }
+    const light = await pool.query(`SELECT l.id FROM lights l WHERE l.id = $1${extra}`, params);
+    if (light.rows.length === 0) {
+      return res.status(404).json({ message: 'Light nahi mili' });
+    }
+    const result = await pool.query(
+      `INSERT INTO fe_submissions (engineer_id, light_id, remarks, photo_url)
+       VALUES ($1, $2, $3, $4) RETURNING id`,
+      [req.user.id, Number(light_id), remarks || null, photo_url || null]
+    );
+    res.status(201).json({ id: result.rows[0].id });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 router.post('/submissions/:id', auth, async (req, res) => {
   if (!canWrite(req, res)) return;
   try {
@@ -171,6 +203,52 @@ router.get('/swaps', auth, async (req, res) => {
       params
     );
     res.json({ rows: result.rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.post('/swaps', auth, async (req, res) => {
+  if (req.user.role !== 'field_engineer') {
+    return res.status(403).json({ message: 'Sirf field engineer swap request bhej sakta hai' });
+  }
+  try {
+    const { light_id, new_controller_id } = req.body;
+    if (!Number.isInteger(Number(light_id))) {
+      return res.status(400).json({ message: 'Light chuno' });
+    }
+    const newCid = String(new_controller_id || '').trim();
+    if (!newCid) {
+      return res.status(400).json({ message: 'Naya controller ID zaruri hai' });
+    }
+
+    const owner = await getOwnerId(req);
+    const params = [Number(light_id)];
+    let extra = '';
+    if (owner !== null) {
+      params.push(owner);
+      extra = ' AND l.customer_id = $2';
+    }
+    const light = await pool.query(
+      `SELECT l.id, l.controller_id FROM lights l WHERE l.id = $1${extra}`,
+      params
+    );
+    if (light.rows.length === 0) {
+      return res.status(404).json({ message: 'Light nahi mili' });
+    }
+
+    const ctrl = await pool.query('SELECT id FROM controllers WHERE controller_id = $1', [newCid]);
+    if (ctrl.rows.length === 0) {
+      return res.status(404).json({ message: 'Ye controller ID exist nahi karta' });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO swap_requests (light_id, old_controller_id, new_controller_id, requested_by)
+       VALUES ($1, $2, $3, $4) RETURNING id`,
+      [light.rows[0].id, light.rows[0].controller_id, ctrl.rows[0].id, req.user.id]
+    );
+    res.status(201).json({ id: result.rows[0].id });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

@@ -52,6 +52,7 @@ body {
   .badge { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium; }
   .badge-ok { @apply bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500; }
   .badge-bad { @apply bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500; }
+  .badge-warn { @apply bg-warning-50 text-warning-500 dark:bg-warning-500/15 dark:text-warning-500; }
   .badge-off { @apply bg-gray-100 text-gray-600 dark:bg-white/5 dark:text-gray-400; }
 }
 @theme { --text-theme-xs: 12px; }

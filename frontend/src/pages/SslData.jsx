@@ -1,4 +1,5 @@
 ﻿import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Plus, X, Pencil, Trash2 } from 'lucide-react';
 import api from '../api';
 import useLive from '../hooks/useLive';
@@ -17,7 +18,8 @@ export default function SslData() {
   const [lights, setLights] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [params, setParams] = useSearchParams();
+  const search = params.get('search') || '';
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -47,6 +49,14 @@ export default function SslData() {
   }, [page, search, status, reload]);
 
   useLive(() => setReload((n) => n + 1));
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') { setEdit(null); setDel(null); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   const pages = Math.max(Math.ceil(total / limit), 1);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
@@ -172,7 +182,7 @@ export default function SslData() {
       )}
 
       <div className="mt-5 flex flex-wrap gap-3">
-        <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Controller ID ya pole number" className="input w-72" />
+        <input value={search} onChange={(e) => { setParams(e.target.value ? { search: e.target.value } : {}, { replace: true }); setPage(1); }} placeholder="Controller ID ya pole number" className="input w-72" />
         <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="input">
           <option value="">Sab status</option><option value="healthy">Healthy</option><option value="faulty">Faulty</option>
         </select>
@@ -188,7 +198,9 @@ export default function SslData() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-            {loading && <tr><td colSpan={cols} className="td text-center">Loading...</td></tr>}
+            {loading && Array.from({ length: 5 }).map((_, i) => (
+              <tr key={i}><td colSpan={cols} className="td"><div className="shimmer h-5 rounded" /></td></tr>
+            ))}
             {!loading && lights.length === 0 && <tr><td colSpan={cols} className="td text-center">Koi light nahi mili</td></tr>}
             {!loading && lights.map((l) => (
               <tr key={l.id}>

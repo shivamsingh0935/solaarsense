@@ -11,7 +11,7 @@ router.get('/', auth, async (req, res) => {
 
     if (req.user.role !== 'admin') {
       let ownerId = req.user.id;
-      if (req.user.role === 'sub_user') {
+      if (req.user.role === 'sub_user' || req.user.role === 'field_engineer') {
         const r = await pool.query('SELECT parent_id FROM users WHERE id = $1', [req.user.id]);
         ownerId = r.rows[0]?.parent_id ?? -1;
       }

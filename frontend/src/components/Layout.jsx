@@ -33,26 +33,27 @@ const menu = [
   },
 ];
 
-const item = ({ isActive }) =>
-  `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium hover:translate-x-1 ${
-    isActive
-      ? 'bg-brand-50 text-brand-500 dark:bg-brand-500/[0.12] dark:text-brand-400'
-      : 'text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5'
-  }`;
-
 export default function Layout() {
   const [open, setOpen] = useState(null);
   const [mobile, setMobile] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [dark, setDark] = useState(localStorage.getItem('theme') === 'dark');
+  const [query, setQuery] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+  const activeSection = menu.find((m) => m.children?.some((c) => location.pathname.startsWith(c.to)));
+  const sectionLabel = activeSection?.label;
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
     localStorage.setItem('theme', dark ? 'dark' : 'light');
   }, [dark]);
+
+  useEffect(() => {
+    if (sectionLabel) setOpen(sectionLabel);
+  }, [sectionLabel]);
 
   useEffect(() => {
     const onClick = (e) => {
@@ -78,60 +79,85 @@ export default function Layout() {
     navigate('/login');
   };
 
+  const search = (e) => {
+    e.preventDefault();
+    const q = query.trim();
+    navigate('/ssl-data' + (q ? `?search=${encodeURIComponent(q)}` : ''));
+    setQuery('');
+  };
+
   const initials = (user.name || 'U').slice(0, 1).toUpperCase();
+
+  const itemCls = ({ isActive }) =>
+    `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium hover:translate-x-1 ${collapsed ? 'lg:justify-center lg:px-0' : ''} ${
+      isActive
+        ? 'bg-brand-50 text-brand-500 dark:bg-brand-500/[0.12] dark:text-brand-400'
+        : 'text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5'
+    }`;
 
   return (
     <div className="min-h-screen">
       {mobile && <div className="fixed inset-0 z-40 bg-gray-900/50 lg:hidden" onClick={() => setMobile(false)} />}
 
       <aside
-        className={`fixed inset-y-0 start-0 z-50 flex w-72 flex-col border-e border-gray-200 bg-white px-5 transition-transform dark:border-gray-800 dark:bg-gray-900
-        ${mobile ? 'translate-x-0' : '-translate-x-full'} ${collapsed ? 'lg:-translate-x-full' : 'lg:translate-x-0'}`}
+        className={`fixed inset-y-0 start-0 z-50 flex w-72 flex-col border-e border-gray-200 bg-white px-5 transition-all duration-300 dark:border-gray-800 dark:bg-gray-900
+        ${collapsed ? 'lg:w-[76px] lg:px-3' : 'lg:w-72'}
+        ${mobile ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
         <div className="flex h-20 items-center gap-3">
-          <div className="pop-in flex h-9 w-9 items-center justify-center rounded-xl bg-brand-500 text-white"><Zap size={20} /></div>
-          <span className="text-xl font-semibold text-gray-800 dark:text-white/90">SolarSense</span>
+          <div className="pop-in flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-500 text-white"><Zap size={20} /></div>
+          <span className={`text-xl font-semibold text-gray-800 dark:text-white/90 ${collapsed ? 'lg:hidden' : ''}`}>SolarSense</span>
         </div>
 
         <nav className="mt-2 flex-1 space-y-1 overflow-y-auto pb-6">
-          <div className="mb-2 px-3 text-xs text-gray-400">Menu</div>
+          <div className={`mb-2 px-3 text-xs text-gray-400 ${collapsed ? 'lg:hidden' : ''}`}>Menu</div>
           {menu.map((m, mi) =>
             m.children ? (
               <div key={m.label} className="slide-left" style={{ '--i': mi }}>
                 <button
-                  onClick={() => setOpen(open === m.label ? null : m.label)}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5"
+                  onClick={() => {
+                    if (collapsed) { setCollapsed(false); setOpen(m.label); }
+                    else setOpen(open === m.label ? null : m.label);
+                  }}
+                  title={m.label}
+                  className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-gray-100 dark:hover:bg-white/5 ${collapsed ? 'lg:justify-center lg:px-0' : ''} ${
+                    sectionLabel === m.label ? 'text-brand-500 dark:text-brand-400' : 'text-gray-700 dark:text-gray-400'
+                  }`}
                 >
-                  <m.icon size={20} />
-                  <span className="flex-1 text-start">{m.label}</span>
-                  <ChevronDown size={16} className={`transition-transform duration-300 ${open === m.label ? 'rotate-180' : ''}`} />
+                  <m.icon size={20} className="shrink-0" />
+                  <span className={`flex-1 text-start ${collapsed ? 'lg:hidden' : ''}`}>{m.label}</span>
+                  <ChevronDown size={16} className={`transition-transform duration-300 ${collapsed ? 'lg:hidden' : ''} ${open === m.label ? 'rotate-180' : ''}`} />
                 </button>
-                <div className={`grid transition-all duration-300 ease-out ${open === m.label ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                <div className={`grid transition-all duration-300 ease-out ${collapsed ? 'lg:hidden' : ''} ${open === m.label ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
                   <div className="overflow-hidden">
                     <div className="ms-6 mt-1 space-y-1 border-s border-gray-200 ps-3 dark:border-gray-800">
                       {m.children.map((c) => (
-                        <NavLink key={c.to} to={c.to} onClick={() => setMobile(false)} className={item}>{c.label}</NavLink>
+                        <NavLink key={c.to} to={c.to} onClick={() => setMobile(false)} title={c.label} className={itemCls}>
+                          <span className={`${collapsed ? 'lg:hidden' : ''}`}>{c.label}</span>
+                        </NavLink>
                       ))}
                     </div>
                   </div>
                 </div>
               </div>
             ) : (
-              <NavLink key={m.to} to={m.to} end onClick={() => setMobile(false)} className={(a) => item(a) + ' slide-left'} style={{ '--i': mi }}>
-                <m.icon size={20} /> {m.label}
+              <NavLink key={m.to} to={m.to} end onClick={() => setMobile(false)} title={m.label} className={(a) => itemCls(a) + ' slide-left'} style={{ '--i': mi }}>
+                <m.icon size={20} className="shrink-0" />
+                <span className={`${collapsed ? 'lg:hidden' : ''}`}>{m.label}</span>
               </NavLink>
             )
           )}
         </nav>
 
-        <button onClick={logout} className="mb-5 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-error-600 hover:bg-error-50 dark:hover:bg-error-500/10">
-          <LogOut size={20} /> Logout
+        <button onClick={logout} title="Logout" className={`mb-5 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-error-600 hover:bg-error-50 dark:hover:bg-error-500/10 ${collapsed ? 'lg:justify-center lg:px-0' : ''}`}>
+          <LogOut size={20} className="shrink-0" />
+          <span className={`${collapsed ? 'lg:hidden' : ''}`}>Logout</span>
         </button>
       </aside>
 
       <ToastHost />
       <div key={'bar' + location.pathname} className="route-bar" />
-      <div className={`transition-all ${collapsed ? '' : 'lg:ms-72'}`}>
+      <div className={`transition-all ${collapsed ? 'lg:ms-[76px]' : 'lg:ms-72'}`}>
         <header className="header-in sticky top-0 z-30 flex h-20 items-center gap-3 border-b border-gray-200 bg-white px-4 dark:border-gray-800 dark:bg-gray-900 lg:px-6">
           <button
             onClick={() => (window.innerWidth >= 1024 ? setCollapsed(!collapsed) : setMobile(!mobile))}
@@ -141,10 +167,15 @@ export default function Layout() {
             {mobile ? <X size={18} /> : <Menu size={18} />}
           </button>
 
-          <div className="relative hidden w-full max-w-md sm:block">
+          <form onSubmit={search} className="relative hidden w-full max-w-md sm:block">
             <Search size={18} className="absolute start-4 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input placeholder="Search..." className="input w-full ps-11" />
-          </div>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Light dhundo (controller ID ya pole)..."
+              className="input w-full ps-11"
+            />
+          </form>
 
           <div className="ms-auto flex items-center gap-3">
             <button

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { Download } from 'lucide-react';
 import api from '../api';
 import useLive from '../hooks/useLive';
+import { downloadCsv, fmtNumber } from '../utils/format';
 
 export default function WorkingDays() {
   const [rows, setRows] = useState([]);
@@ -20,12 +22,25 @@ export default function WorkingDays() {
 
   useLive(() => setReload((n) => n + 1));
 
-  const kwh = rows.reduce((s, r) => s + r.total_kwh, 0).toFixed(2);
   const hrs = rows.reduce((s, r) => s + r.total_hours, 0);
+  const kwh = rows.reduce((s, r) => s + r.total_kwh, 0);
+
+  const exportCsv = () => {
+    downloadCsv(
+      `working-days${from ? `-${from}` : ''}${to ? `-${to}` : ''}.csv`,
+      ['Controller ID', 'Pole', 'Working Days', 'Total Hours', 'Energy (kWh)'],
+      rows.map((r) => [r.controller_id || '', r.pole_number, r.working_days, r.total_hours, r.total_kwh])
+    );
+  };
 
   return (
     <div>
-      <h1 className="page-title">Light Working Days</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="page-title">Light Working Days</h1>
+        <button className="btn-outline h-11" disabled={loading || rows.length === 0} onClick={exportCsv}>
+          <Download size={16} /> CSV
+        </button>
+      </div>
       <div className="mt-5 flex flex-wrap items-center gap-3 text-sm">
         <span className="text-gray-500">From</span>
         <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="input" />
@@ -40,20 +55,22 @@ export default function WorkingDays() {
             <tr>{['Controller ID', 'Pole', 'Working Days', 'Total Hours', 'Energy (kWh)'].map((h) => <th key={h} className="th">{h}</th>)}</tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-            {loading && <tr><td colSpan="5" className="td text-center">Loading...</td></tr>}
+            {loading && Array.from({ length: 5 }).map((_, i) => (
+              <tr key={i}><td colSpan="5" className="td"><div className="shimmer h-5 rounded" /></td></tr>
+            ))}
             {!loading && rows.length === 0 && <tr><td colSpan="5" className="td text-center">Data nahi mila</td></tr>}
             {!loading && rows.map((r) => (
               <tr key={r.id}>
                 <td className="td font-medium text-gray-800 dark:text-white/90">{r.controller_id || '-'}</td>
                 <td className="td">{r.pole_number}</td><td className="td">{r.working_days}</td>
-                <td className="td">{r.total_hours}</td><td className="td">{r.total_kwh}</td>
+                <td className="td">{fmtNumber(r.total_hours)}</td><td className="td">{fmtNumber(r.total_kwh, 2)}</td>
               </tr>
             ))}
           </tbody>
           {!loading && rows.length > 0 && (
             <tfoot className="border-t border-gray-200 dark:border-gray-800">
               <tr className="font-semibold text-gray-800 dark:text-white/90">
-                <td className="td" colSpan="3">Total</td><td className="td">{hrs}</td><td className="td">{kwh}</td>
+                <td className="td" colSpan="3">Total</td><td className="td">{fmtNumber(hrs)}</td><td className="td">{fmtNumber(kwh, 2)}</td>
               </tr>
             </tfoot>
           )}

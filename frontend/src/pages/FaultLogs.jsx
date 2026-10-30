@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
+import { Download } from 'lucide-react';
 import api from '../api';
 import useLive from '../hooks/useLive';
-
-const fmt = (d) => (d ? new Date(d).toLocaleString() : '-');
+import { downloadCsv, fmtDate } from '../utils/format';
 
 export default function FaultLogs() {
   const [rows, setRows] = useState([]);
@@ -21,9 +21,22 @@ export default function FaultLogs() {
 
   useLive(() => setReload((n) => n + 1));
 
+  const exportCsv = () => {
+    downloadCsv(
+      `fault-logs${status ? `-${status}` : ''}.csv`,
+      ['Controller ID', 'Pole', 'Fault', 'Reported', 'Rectified', 'Rectified By', 'Status'],
+      rows.map((r) => [r.controller_id || '', r.pole_number, r.fault_type, fmtDate(r.reported_at), fmtDate(r.rectified_at), r.rectified_by || '', r.rectified_at ? 'Rectified' : 'Pending'])
+    );
+  };
+
   return (
     <div>
-      <h1 className="page-title">Fault Rectification Logs</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="page-title">Fault Rectification Logs</h1>
+        <button className="btn-outline h-11" disabled={loading || rows.length === 0} onClick={exportCsv}>
+          <Download size={16} /> CSV
+        </button>
+      </div>
       <div className="mt-5">
         <select value={status} onChange={(e) => setStatus(e.target.value)} className="input">
           <option value="">Sab</option><option value="pending">Pending</option><option value="rectified">Rectified</option>
@@ -36,13 +49,15 @@ export default function FaultLogs() {
             <tr>{['Controller ID', 'Pole', 'Fault', 'Reported', 'Rectified', 'Rectified By', 'Status'].map((h) => <th key={h} className="th">{h}</th>)}</tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-            {loading && <tr><td colSpan="7" className="td text-center">Loading...</td></tr>}
+            {loading && Array.from({ length: 5 }).map((_, i) => (
+              <tr key={i}><td colSpan="7" className="td"><div className="shimmer h-5 rounded" /></td></tr>
+            ))}
             {!loading && rows.length === 0 && <tr><td colSpan="7" className="td text-center">Data nahi mila</td></tr>}
             {!loading && rows.map((r) => (
               <tr key={r.id}>
                 <td className="td font-medium text-gray-800 dark:text-white/90">{r.controller_id || '-'}</td>
                 <td className="td">{r.pole_number}</td><td className="td">{r.fault_type}</td>
-                <td className="td">{fmt(r.reported_at)}</td><td className="td">{fmt(r.rectified_at)}</td>
+                <td className="td">{fmtDate(r.reported_at)}</td><td className="td">{fmtDate(r.rectified_at)}</td>
                 <td className="td">{r.rectified_by || '-'}</td>
                 <td className="td"><span className={`badge ${r.rectified_at ? 'badge-ok' : 'badge-bad'}`}>{r.rectified_at ? 'Rectified' : 'Pending'}</span></td>
               </tr>

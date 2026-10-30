@@ -7,7 +7,7 @@ const router = express.Router();
 async function ownerWhere(req, params, conditions) {
   if (req.user.role !== 'admin') {
     let ownerId = req.user.id;
-    if (req.user.role === 'sub_user') {
+    if (req.user.role === 'sub_user' || req.user.role === 'field_engineer') {
       const r = await pool.query('SELECT parent_id FROM users WHERE id = $1', [req.user.id]);
       ownerId = r.rows[0]?.parent_id ?? -1;
     }
@@ -89,6 +89,28 @@ router.get('/map', auth, async (req, res) => {
        FROM lights l
        LEFT JOIN controllers c ON c.id = l.controller_id
        WHERE ${conditions.join(' AND ')}
+       ORDER BY l.id`,
+      params
+    );
+    res.json({ lights: result.rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.get('/all', auth, async (req, res) => {
+  try {
+    const conditions = [];
+    const params = [];
+    await ownerWhere(req, params, conditions);
+    const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+
+    const result = await pool.query(
+      `SELECT l.id, l.pole_number, l.status, c.controller_id
+       FROM lights l
+       LEFT JOIN controllers c ON c.id = l.controller_id
+       ${where}
        ORDER BY l.id`,
       params
     );

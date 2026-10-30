@@ -15,5 +15,5 @@ export default function CountUp({ value, duration = 900 }) {
     return () => cancelAnimationFrame(raf);
   }, [target, duration]);
   const decimals = Number.isInteger(target) ? 0 : 1;
-  return <>{n.toFixed(decimals)}</>;
+  return <>{n.toLocaleString('en-IN', { maximumFractionDigits: decimals })}</>;
 }
