@@ -30,6 +30,7 @@ app.use('/api/lights', require('./routes/lights'));
 app.use('/api/reports', require('./routes/reports'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/live', require('./routes/live'));
+app.use('/api/controller-data', require('./routes/controller-data'));
 
 // Production: frontend ka build isi port se serve ho, taaki ek hi process chale.
 // Dev mein Vite apna server chalata hai, toh dist na ho ye block skip ho jata hai.

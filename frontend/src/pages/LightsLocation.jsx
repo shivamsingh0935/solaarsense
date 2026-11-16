@@ -1,8 +1,33 @@
 import { useEffect, useState, useMemo } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import api from '../api';
 import useLive from '../hooks/useLive';
+
+const STATUS_COLORS = {
+  healthy: { fill: '#12b76a', stroke: '#15803d' },
+  faulty: { fill: '#f04438', stroke: '#b91c1c' },
+  off: { fill: '#98a2b3', stroke: '#667085' },
+};
+
+function statusOf(l) {
+  return l.control === 'OFF' ? 'off' : l.status === 'healthy' ? 'healthy' : 'faulty';
+}
+
+function lightSvg(status, size) {
+  const c = STATUS_COLORS[status];
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 2h8l4 10H4L8 2Z" fill="${c.fill}" stroke="${c.stroke}" stroke-width="1.5"/>
+    <path d="M12 12v6" stroke="#475467" stroke-width="1.75"/>
+    <path d="M8 22v-2c0-1.1.9-2 2-2h4a2 2 0 0 1 2 2v2H8Z" stroke="#475467" stroke-width="1.75"/>
+  </svg>`;
+}
+
+function lightIcon(l) {
+  const pin = `<div style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:9999px;border:1px solid #e4e7ec;box-shadow:0 2px 6px rgba(16,24,40,.35);box-sizing:border-box;">${lightSvg(statusOf(l), 20)}</div>`;
+  return L.divIcon({ className: 'ss-light-marker', html: pin, iconSize: [30, 30], iconAnchor: [15, 15], popupAnchor: [0, -16] });
+}
 
 export default function LightsLocation() {
   const [lights, setLights] = useState([]);
@@ -27,6 +52,8 @@ export default function LightsLocation() {
     faulty: lights.filter((l) => l.status === 'faulty').length,
     off: lights.filter((l) => l.control === 'OFF').length,
   }), [lights]);
+
+  const icons = useMemo(() => new Map(lights.map((l) => [l.id, lightIcon(l)])), [lights]);
 
   const center = lights.length
     ? [Number(lights[0].latitude), Number(lights[0].longitude)]
@@ -56,9 +83,15 @@ export default function LightsLocation() {
         <div className="flex flex-wrap items-center justify-between gap-3 p-5 pb-3">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">Live Map</h2>
           <div className="flex flex-wrap gap-4 text-sm text-gray-500">
-            <span className="flex items-center gap-2"><i className="h-2.5 w-2.5 rounded-full bg-success-500" />Healthy</span>
-            <span className="flex items-center gap-2"><i className="h-2.5 w-2.5 rounded-full bg-error-500" />Faulty</span>
-            <span className="flex items-center gap-2"><i className="h-2.5 w-2.5 rounded-full bg-gray-400" />OFF</span>
+            {[['healthy', 'Healthy'], ['faulty', 'Faulty'], ['off', 'OFF']].map(([status, label]) => (
+              <span key={status} className="flex items-center gap-1.5">
+                <span
+                  className="flex h-6 w-6 items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm"
+                  dangerouslySetInnerHTML={{ __html: lightSvg(status, 14) }}
+                />
+                {label}
+              </span>
+            ))}
           </div>
         </div>
 
@@ -76,16 +109,10 @@ export default function LightsLocation() {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
               {lights.map((l) => (
-                <CircleMarker
+                <Marker
                   key={l.id}
-                  center={[Number(l.latitude), Number(l.longitude)]}
-                  radius={9}
-                  pathOptions={{
-                    color: l.control === 'OFF' ? '#98a2b3' : l.status === 'healthy' ? '#15803d' : '#b91c1c',
-                    fillColor: l.control === 'OFF' ? '#98a2b3' : l.status === 'healthy' ? '#12b76a' : '#f04438',
-                    fillOpacity: 0.85,
-                    weight: 2,
-                  }}
+                  position={[Number(l.latitude), Number(l.longitude)]}
+                  icon={icons.get(l.id)}
                 >
                   <Popup>
                     <div className="text-sm">
@@ -96,7 +123,7 @@ export default function LightsLocation() {
                       <div>Control: {l.control} | DIM: {l.dim}%</div>
                     </div>
                   </Popup>
-                </CircleMarker>
+                </Marker>
               ))}
             </MapContainer>
           </div>
