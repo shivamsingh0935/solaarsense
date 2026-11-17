@@ -18,7 +18,7 @@ export default function UsersPage({ role, title }) {
     setLoading(true);
     api.get('/users', { params: { role } })
       .then((r) => { setUsers(r.data.users); setError(''); })
-      .catch(() => setError('List load nahi ho payi'))
+      .catch(() => setError('List failed to load'))
       .finally(() => setLoading(false));
   };
   useEffect(() => { load(); setShow(false); }, [role]);
@@ -31,21 +31,21 @@ export default function UsersPage({ role, title }) {
     setFormError(''); setSaving(true);
     try {
       await api.post('/users', { ...form, role });
-      setForm(empty); setShow(false); load(); toast('User ban gaya');
+      setForm(empty); setShow(false); load(); toast('User created successfully');
     } catch (err) {
-      const m = err.response?.data?.message || 'User nahi ban paya'; setFormError(m); toast(m, 'error');
+      const m = err.response?.data?.message || 'User creation failed'; setFormError(m); toast(m, 'error');
     } finally { setSaving(false); }
   };
 
   const toggle = async (id) => {
-    try { await api.patch(`/users/${id}/toggle`); load(); toast('Status badal gaya'); } catch { setError('Status badal nahi paya'); }
+    try { await api.patch(`/users/${id}/toggle`); load(); toast('Status updated'); } catch { setError('Status update failed'); }
   };
 
   return (
     <div>
       <div className="flex items-center justify-between">
         <h1 className="page-title">{title}</h1>
-        <button className="btn-primary" onClick={() => setShow(!show)}>{show ? 'Band karo' : 'Naya jodo'}</button>
+        <button className="btn-primary" onClick={() => setShow(!show)}>{show ? 'Turn off' : 'Add new'}</button>
       </div>
 
       {show && (
@@ -55,7 +55,7 @@ export default function UsersPage({ role, title }) {
           <input className="input" type="password" placeholder="Password (kam se kam 6)" value={form.password} onChange={set('password')} />
           <input className="input" placeholder="Phone (optional)" value={form.phone} onChange={set('phone')} />
           {formError && <div className="text-sm text-error-600 sm:col-span-2">{formError}</div>}
-          <button disabled={saving} className="btn-primary sm:col-span-2">{saving ? <><span className="spinner" /> Save ho raha hai</> : 'Save karo'}</button>
+          <button disabled={saving} className="btn-primary sm:col-span-2">{saving ? <><span className="spinner" /> Saving...</> : 'Save it'}</button>
         </form>
       )}
 
@@ -69,13 +69,13 @@ export default function UsersPage({ role, title }) {
             {loading && Array.from({ length: 5 }).map((_, i) => (
               <tr key={i}><td colSpan="5" className="td"><div className="shimmer h-5 rounded" /></td></tr>
             ))}
-            {!loading && users.length === 0 && <tr><td colSpan="5" className="td text-center">Koi user nahi mila</td></tr>}
+            {!loading && users.length === 0 && <tr><td colSpan="5" className="td text-center">No user found</td></tr>}
             {!loading && users.map((u) => (
               <tr key={u.id}>
                 <td className="td font-medium text-gray-800 dark:text-white/90">{u.name}</td>
                 <td className="td">{u.username}</td><td className="td">{u.phone || '-'}</td>
                 <td className="td"><span className={`badge ${u.is_active ? 'badge-ok' : 'badge-off'}`}>{u.is_active ? 'Active' : 'Inactive'}</span></td>
-                <td className="td"><button className="btn-outline" onClick={() => toggle(u.id)}>{u.is_active ? 'Inactive karo' : 'Active karo'}</button></td>
+                <td className="td"><button className="btn-outline" onClick={() => toggle(u.id)}>{u.is_active ? 'Deactivate' : 'Activate'}</button></td>
               </tr>
             ))}
           </tbody>

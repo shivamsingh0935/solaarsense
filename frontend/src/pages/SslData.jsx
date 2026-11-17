@@ -42,7 +42,7 @@ export default function SslData() {
       setLoading(true);
       api.get('/lights', { params: { page, limit, search, status } })
         .then((r) => { setLights(r.data.lights); setTotal(r.data.total); setError(''); })
-        .catch(() => setError('Data load nahi ho paya'))
+        .catch(() => setError('Data could not be loaded'))
         .finally(() => setLoading(false));
     }, 300);
     return () => clearTimeout(t);
@@ -66,7 +66,7 @@ export default function SslData() {
     e.preventDefault();
     setFormError('');
     if (!form.controller_id.trim() || !form.pole_number.trim()) {
-      setFormError('Controller ID aur Pole number zaruri hain');
+      setFormError('Controller ID and pole number are required');
       return;
     }
     setSaving(true);
@@ -78,7 +78,7 @@ export default function SslData() {
       setPage(1);
       setReload((n) => n + 1);
     } catch (err) {
-      const m = err.response?.data?.message || 'Light add nahi ho payi';
+      const m = err.response?.data?.message || 'The light could not be added.';
       setFormError(m);
       toast(m, 'error');
     } finally {
@@ -105,7 +105,7 @@ export default function SslData() {
     e.preventDefault();
     setEditError('');
     if (!String(edit.pole_number).trim()) {
-      setEditError('Pole number khali nahi ho sakta');
+      setEditError('Pole number cannot be empty');
       return;
     }
     setBusy(true);
@@ -119,11 +119,11 @@ export default function SslData() {
         control: edit.control,
         is_plugged: edit.is_plugged,
       });
-      toast('Light update ho gayi');
+      toast('The light has been updated');
       setEdit(null);
       setReload((n) => n + 1);
     } catch (err) {
-      const m = err.response?.data?.message || 'Update nahi ho payi';
+      const m = err.response?.data?.message || 'Could not be updated';
       setEditError(m);
       toast(m, 'error');
     } finally {
@@ -140,7 +140,7 @@ export default function SslData() {
       if (lights.length === 1 && page > 1) setPage(page - 1);
       setReload((n) => n + 1);
     } catch (err) {
-      toast(err.response?.data?.message || 'Light nahi hat payi', 'error');
+      toast(err.response?.data?.message || 'Light could not be removed', 'Error');
     } finally {
       setBusy(false);
     }
@@ -172,11 +172,11 @@ export default function SslData() {
           <div><Label>Longitude</Label><input className="input w-full" placeholder="77.2090" value={form.longitude} onChange={set('longitude')} /></div>
           <div><Label>DIM (0 se 100)</Label><input className="input w-full" type="number" min="0" max="100" value={form.dim} onChange={set('dim')} /></div>
           <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-400">
-            <input type="checkbox" checked={form.is_plugged} onChange={(e) => setForm({ ...form, is_plugged: e.target.checked })} /> Plugged hai
+            <input type="checkbox" checked={form.is_plugged} onChange={(e) => setForm({ ...form, is_plugged: e.target.checked })} /> He's a plug
           </label>
           {formError && <div className="text-sm text-error-600 sm:col-span-2 lg:col-span-3">{formError}</div>}
           <button disabled={saving} className="btn-primary sm:col-span-2 lg:col-span-3">
-            {saving ? <><span className="spinner" /> Save ho raha hai</> : 'Save karo'}
+            {saving ? <><span className="spinner" /> Saving...</> : 'Save karo'}
           </button>
         </form>
       )}
@@ -201,7 +201,7 @@ export default function SslData() {
             {loading && Array.from({ length: 5 }).map((_, i) => (
               <tr key={i}><td colSpan={cols} className="td"><div className="shimmer h-5 rounded" /></td></tr>
             ))}
-            {!loading && lights.length === 0 && <tr><td colSpan={cols} className="td text-center">Koi light nahi mili</td></tr>}
+            {!loading && lights.length === 0 && <tr><td colSpan={cols} className="td text-center">No light was found</td></tr>}
             {!loading && lights.map((l) => (
               <tr key={l.id}>
                 <td className="td font-medium text-gray-800 dark:text-white/90">{l.controller_id || '-'}</td>
@@ -238,7 +238,7 @@ export default function SslData() {
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-gray-900/50 p-4" onClick={() => !busy && setEdit(null)}>
           <form onSubmit={saveEdit} onClick={(e) => e.stopPropagation()} className="card pop-in grid w-full max-w-2xl gap-4 bg-white p-6 sm:grid-cols-2 dark:bg-gray-900">
             <div className="flex items-center justify-between sm:col-span-2">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">Light badlo ({edit.controller_id})</h2>
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">Light change ({edit.controller_id})</h2>
               <button type="button" className="btn-outline !px-2" onClick={() => setEdit(null)}><X size={16} /></button>
             </div>
             <div><Label>Pole number</Label><input className="input w-full" value={edit.pole_number} onChange={setE('pole_number')} /></div>
@@ -256,11 +256,11 @@ export default function SslData() {
             </div>
             <div><Label>DIM (0 se 100)</Label><input className="input w-full" type="number" min="0" max="100" value={edit.dim} onChange={setE('dim')} /></div>
             <label className="flex items-center gap-2 text-sm text-gray-700 sm:col-span-2 dark:text-gray-400">
-              <input type="checkbox" checked={edit.is_plugged} onChange={(e) => setEdit({ ...edit, is_plugged: e.target.checked })} /> Plugged hai
+              <input type="checkbox" checked={edit.is_plugged} onChange={(e) => setEdit({ ...edit, is_plugged: e.target.checked })} /> He's a plug
             </label>
             {editError && <div className="text-sm text-error-600 sm:col-span-2">{editError}</div>}
             <button disabled={busy} className="btn-primary sm:col-span-2">
-              {busy ? <><span className="spinner" /> Save ho raha hai</> : 'Update karo'}
+              {busy ? <><span className="spinner" /> Saving...</> : 'Update karo'}
             </button>
           </form>
         </div>
@@ -269,14 +269,14 @@ export default function SslData() {
       {del && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-gray-900/50 p-4" onClick={() => !busy && setDel(null)}>
           <div onClick={(e) => e.stopPropagation()} className="card pop-in w-full max-w-md bg-white p-6 dark:bg-gray-900">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">Light hatani hai?</h2>
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">Do you want the light removed?</h2>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              <b>{del.controller_id}</b> ({del.pole_number}) hat jayegi. Iske working days, fault logs aur submissions bhi hat jayenge. Ye wapas nahi aayega.
+              <b>{del.controller_id}</b> ({del.pole_number}) It will be removed. Its working days, fault logs, and submissions will also be removed. This cannot be recovered.
             </p>
             <div className="mt-5 flex justify-end gap-3">
               <button className="btn-outline h-11" disabled={busy} onClick={() => setDel(null)}>Nahi</button>
               <button className="inline-flex h-11 items-center gap-2 rounded-lg bg-error-600 px-5 text-sm font-medium text-white hover:bg-error-500 disabled:opacity-60" disabled={busy} onClick={confirmDelete}>
-                {busy ? <><span className="spinner" /> Hat rahi hai</> : 'Haan, hatao'}
+                {busy ? <><span className="spinner" /> It is moving away.</> : 'yes, remove'}
               </button>
             </div>
           </div>

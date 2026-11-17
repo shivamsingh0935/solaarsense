@@ -62,7 +62,7 @@ export default function LightsLocation() {
   return (
     <div>
       <h1 className="page-title">Lights Location</h1>
-      <p className="mt-1 text-sm text-gray-500">Map par har light ki live position aur status dekho.</p>
+      <p className="mt-1 text-sm text-gray-500">View the live position and status of each light on the map.</p>
 
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         {[['Total Lights', stats.total, 'gray'], ['Healthy', stats.healthy, 'ok'], ['Faulty', stats.faulty, 'bad'], ['OFF', stats.off, 'warn']].map(([label, value, tone], i) => (
@@ -101,7 +101,7 @@ export default function LightsLocation() {
           <div className="relative m-5 mt-0" style={{ height: '60vh' }}>
             {lights.length === 0 && (
               <div className="absolute left-1/2 top-3 z-[500] -translate-x-1/2 whitespace-nowrap rounded-full bg-white/95 px-4 py-1.5 text-sm text-gray-600 shadow-md">
-                Abhi koi light nahi — API data aane par markers yahan dikhenge
+                No data yet — markers will appear here once API data is received
               </div>
             )}
             <MapContainer center={center} zoom={12} style={{ height: '100%', width: '100%', borderRadius: 12 }}>

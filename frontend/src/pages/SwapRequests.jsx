@@ -28,7 +28,7 @@ export default function SwapRequests() {
     setLoading(true);
     api.get('/approvals/swaps', { params: { status } })
       .then((r) => { setRows(r.data.rows); setError(''); })
-      .catch(() => setError('List load nahi ho payi'))
+      .catch(() => setError('The list could not be loaded'))
       .finally(() => setLoading(false));
   };
   useEffect(load, [status]);
@@ -45,17 +45,17 @@ export default function SwapRequests() {
 
   const submit = async (e) => {
     e.preventDefault();
-    if (!form.light_id) { toast('Light chuno', 'error'); return; }
-    if (!form.new_controller_id.trim()) { toast('Naya controller ID zaruri hai', 'error'); return; }
+    if (!form.light_id) { toast('Choose the light', 'error'); return; }
+    if (!form.new_controller_id.trim()) { toast('You need a new controller ID', 'error'); return; }
     setBusy(true);
     try {
       await api.post('/approvals/swaps', form);
-      toast('Swap request bhej di gayi');
+      toast('Swap request sent');
       setForm(empty);
       setShow(false);
       load();
     } catch (err) {
-      toast(err.response?.data?.message || 'Request nahi bheji ja saki', 'error');
+      toast(err.response?.data?.message || 'The request could not be sent', 'error');
     } finally { setBusy(false); }
   };
 
@@ -63,10 +63,10 @@ export default function SwapRequests() {
     setBusy(true);
     try {
       await api.post(`/approvals/swaps/${id}`, { action });
-      toast(action === 'approve' ? 'Swap approve ho gaya' : 'Swap reject ho gaya');
+      toast(action === 'approve' ? 'Swap approved' : 'Swap rejected');
       load();
     } catch (err) {
-      toast(err.response?.data?.message || 'Kuch galat ho gaya', 'error');
+      toast(err.response?.data?.message || 'Something is wrong', 'error');
     } finally { setBusy(false); }
   };
 
@@ -76,7 +76,7 @@ export default function SwapRequests() {
         <h1 className="page-title">Swap Requests</h1>
         {isFe && (
           <button className="btn-primary" onClick={() => setShow(!show)}>
-            {show ? <><X size={18} /> Band karo</> : <><Plus size={18} /> Naya swap request</>}
+            {show ? <><X size={18} /> Turn off</> : <><Plus size={18} /> New swap request</>}
           </button>
         )}
       </div>
@@ -86,7 +86,7 @@ export default function SwapRequests() {
           <div className="sm:col-span-2">
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Light *</label>
             <select className="input w-full" value={form.light_id} onChange={set('light_id')}>
-              <option value="">Light chuno</option>
+              <option value="">Choose the light</option>
               {lights.map((l) => (
                 <option key={l.id} value={l.id}>{l.controller_id || 'No controller'} — Pole {l.pole_number}</option>
               ))}
@@ -97,16 +97,16 @@ export default function SwapRequests() {
               <div className="flex items-center gap-3 text-sm text-gray-500">
                 <span className="badge badge-off">{selected.controller_id || 'No controller'}</span>
                 <ArrowRight size={16} />
-                <span className="badge badge-warn">Naya controller</span>
+                <span className="badge badge-warn">New controller</span>
               </div>
             </div>
           )}
           <div className="sm:col-span-2">
-            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Naya Controller ID *</label>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">New Controller ID *</label>
             <input className="input w-full" placeholder="jaise SSL-1007" value={form.new_controller_id} onChange={set('new_controller_id')} />
           </div>
           <button disabled={busy} className="btn-primary sm:col-span-2">
-            {busy ? <><span className="spinner" /> Bhej rahe hain</> : 'Request bhejo'}
+            {busy ? <><span className="spinner" /> Sending...</> : 'Send the request'}
           </button>
         </form>
       )}
@@ -131,7 +131,7 @@ export default function SwapRequests() {
             {loading && Array.from({ length: 5 }).map((_, i) => (
               <tr key={i}><td colSpan={canWrite ? 7 : 6} className="td"><div className="shimmer h-5 rounded" /></td></tr>
             ))}
-            {!loading && rows.length === 0 && <tr><td colSpan={canWrite ? 7 : 6} className="td text-center">Koi swap request nahi mili</td></tr>}
+            {!loading && rows.length === 0 && <tr><td colSpan={canWrite ? 7 : 6} className="td text-center">No swap request received</td></tr>}
             {!loading && rows.map((r) => (
               <tr key={r.id}>
                 <td className="td">{r.pole_number}</td>

@@ -11,6 +11,7 @@ const toNumber = (v) => {
 };
 
 router.get('/', async (req, res) => {
+  const dodRaw = stripQuotes(req.query.DOD);
   const data = {
     id: stripQuotes(req.query.ID),
     bv: toNumber(req.query.BV),
@@ -20,7 +21,7 @@ router.get('/', async (req, res) => {
     lv: toNumber(req.query.LV),
     li: toNumber(req.query.LI),
     state: stripQuotes(req.query.STATE),
-    dod: parseInt(stripQuotes(req.query.DOD), 10) || 0,
+    dod: dodRaw ? parseInt(dodRaw, 10) || 0 : null,
     conf: stripQuotes(req.query.CONF),
     evnt: stripQuotes(req.query.EVNT),
     mob: stripQuotes(req.query.MOB),
@@ -52,9 +53,16 @@ router.get('/', async (req, res) => {
           `UPDATE controllers SET
              status = $1,
              control = COALESCE($2, control),
+             bv = COALESCE($3, bv),
+             bi = COALESCE($4, bi),
+             sv = COALESCE($5, sv),
+             si = COALESCE($6, si),
+             lv = COALESCE($7, lv),
+             li = COALESCE($8, li),
+             dod = COALESCE($9, dod),
              last_updated = NOW()
-           WHERE id = $3`,
-          [status, control, controllerId]
+           WHERE id = $10`,
+          [status, control, data.bv, data.bi, data.sv, data.si, data.lv, data.li, data.dod, controllerId]
         );
         await client.query(
           'UPDATE lights SET status = $1 WHERE controller_id = $2',
@@ -62,9 +70,9 @@ router.get('/', async (req, res) => {
         );
       } else {
         const c = await client.query(
-          `INSERT INTO controllers (controller_id, status, control)
-           VALUES ($1, $2, $3) RETURNING id`,
-          [data.id, status, control || 'ON']
+          `INSERT INTO controllers (controller_id, status, control, bv, bi, sv, si, lv, li, dod)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id`,
+          [data.id, status, control || 'ON', data.bv, data.bi, data.sv, data.si, data.lv, data.li, data.dod]
         );
         controllerId = c.rows[0].id;
 

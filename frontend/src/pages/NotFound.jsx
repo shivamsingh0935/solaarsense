@@ -10,7 +10,7 @@ export default function NotFound() {
           <Zap size={28} />
         </div>
         <h1 className="mt-6 text-5xl font-bold text-gray-800 dark:text-white/90">404</h1>
-        <p className="mt-3 text-gray-500">Ye page nahi mila. Ho sakta hai link badal gaya ho.</p>
+        <p className="mt-3 text-gray-500">This page could not be found. The link may have changed.</p>
         <Link
           to={loggedIn ? '/' : '/login'}
           className="btn-primary mt-8 w-full"

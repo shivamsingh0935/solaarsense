@@ -10,7 +10,7 @@ router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
-      return res.status(400).json({ message: 'Username aur password dono daalo' });
+      return res.status(400).json({ message: 'Enter both username and password' });
     }
 
     const result = await pool.query(
@@ -19,14 +19,14 @@ router.post('/login', async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(401).json({ message: 'Username ya password galat hai' });
+      return res.status(401).json({ message: 'Invalid username or password' });
     }
 
     const user = result.rows[0];
     const match = await bcrypt.compare(password, user.password);
 
     if (!match) {
-      return res.status(401).json({ message: 'Username ya password galat hai' });
+      return res.status(401).json({ message: 'Invalid username or password' });
     }
 
     const token = jwt.sign(

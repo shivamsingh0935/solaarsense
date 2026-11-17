@@ -16,7 +16,7 @@ export default function WorkingDays() {
     setLoading(true);
     api.get('/reports/working-days', { params: { from, to } })
       .then((r) => { setRows(r.data.rows); setError(''); })
-      .catch(() => setError('Report load nahi ho payi'))
+      .catch(() => setError('Report failed to load'))
       .finally(() => setLoading(false));
   }, [from, to, reload]);
 
@@ -58,7 +58,7 @@ export default function WorkingDays() {
             {loading && Array.from({ length: 5 }).map((_, i) => (
               <tr key={i}><td colSpan="5" className="td"><div className="shimmer h-5 rounded" /></td></tr>
             ))}
-            {!loading && rows.length === 0 && <tr><td colSpan="5" className="td text-center">Data nahi mila</td></tr>}
+            {!loading && rows.length === 0 && <tr><td colSpan="5" className="td text-center">No data found</td></tr>}
             {!loading && rows.map((r) => (
               <tr key={r.id}>
                 <td className="td font-medium text-gray-800 dark:text-white/90">{r.controller_id || '-'}</td>

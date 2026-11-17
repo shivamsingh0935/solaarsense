@@ -15,7 +15,7 @@ router.get('/', auth, async (req, res) => {
   try {
     const role = req.query.role;
     if (!ALLOWED_ROLES.includes(role)) {
-      return res.status(400).json({ message: 'role galat hai' });
+      return res.status(400).json({ message: 'Invalid role' });
     }
 
     let result;
@@ -42,24 +42,24 @@ router.get('/', auth, async (req, res) => {
 router.post('/', auth, async (req, res) => {
   try {
     if (!['admin', 'customer'].includes(req.user.role)) {
-      return res.status(403).json({ message: 'Aapko user banane ki permission nahi hai' });
+      return res.status(403).json({ message: 'You dont have permission to create users' });
     }
 
     const { name, username, password, phone, role } = req.body;
 
     if (!ALLOWED_ROLES.includes(role)) {
-      return res.status(400).json({ message: 'role galat hai' });
+      return res.status(400).json({ message: 'Invaild role' });
     }
     if (!name || !username || !password) {
-      return res.status(400).json({ message: 'Name, username aur password zaruri hain' });
+      return res.status(400).json({ message: 'Name, Username and password are required' });
     }
     if (password.length < 6) {
-      return res.status(400).json({ message: 'Password kam se kam 6 akshar ka ho' });
+      return res.status(400).json({ message: 'Password must be at least 6 characters long' });
     }
 
     const exists = await pool.query('SELECT id FROM users WHERE username = $1', [username]);
     if (exists.rows.length > 0) {
-      return res.status(409).json({ message: 'Ye username pehle se maujood hai' });
+      return res.status(409).json({ message: 'Username already exists' });
     }
 
     const hash = await bcrypt.hash(password, 10);
@@ -80,7 +80,7 @@ router.post('/', auth, async (req, res) => {
 router.patch('/:id/toggle', auth, async (req, res) => {
   try {
     if (!['admin', 'customer'].includes(req.user.role)) {
-      return res.status(403).json({ message: 'Permission nahi hai' });
+      return res.status(403).json({ message: 'Access denied' });
     }
 
     let result;
@@ -99,7 +99,7 @@ router.patch('/:id/toggle', auth, async (req, res) => {
     }
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: 'User nahi mila' });
+      return res.status(404).json({ message: 'User not found' });
     }
     res.json(result.rows[0]);
   } catch (err) {

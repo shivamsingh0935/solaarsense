@@ -18,7 +18,7 @@ async function ownerWhere(req, params, conditions) {
 
 function canWrite(req, res) {
   if (!['admin', 'customer'].includes(req.user.role)) {
-    res.status(403).json({ message: 'Aapko ye karne ki permission nahi hai' });
+    res.status(403).json({ message: 'You dont have permission to do this' });
     return false;
   }
   return true;
@@ -128,25 +128,25 @@ router.post('/', auth, async (req, res) => {
     const { controller_id, pole_number, latitude, longitude, status, is_plugged, dim, control } = req.body;
 
     if (!controller_id || !String(controller_id).trim()) {
-      return res.status(400).json({ message: 'Controller ID zaruri hai' });
+      return res.status(400).json({ message: 'Controller ID is required' });
     }
     if (!pole_number || !String(pole_number).trim()) {
-      return res.status(400).json({ message: 'Pole number zaruri hai' });
+      return res.status(400).json({ message: 'Pole number is required' });
     }
     if (badNumber(latitude, -90, 90) || badNumber(longitude, -180, 180)) {
-      return res.status(400).json({ message: 'Latitude ya longitude galat hai' });
+      return res.status(400).json({ message: 'Invalid latitude or longitude' });
     }
     if (badNumber(dim, 0, 100)) {
-      return res.status(400).json({ message: 'DIM 0 se 100 ke beech hona chahiye' });
+      return res.status(400).json({ message: 'DIM must be between 0 and 100' });
     }
     if (status && !['healthy', 'faulty'].includes(status)) {
-      return res.status(400).json({ message: 'Status galat hai' });
+      return res.status(400).json({ message: 'Invalid status' });
     }
 
     let customerId = req.user.id;
     if (req.user.role === 'admin') {
       customerId = req.body.customer_id;
-      if (!customerId) return res.status(400).json({ message: 'Admin ko customer_id dena zaruri hai' });
+      if (!customerId) return res.status(400).json({ message: 'Customer ID is required for admin' });
     }
 
     const cid = String(controller_id).trim();
@@ -162,7 +162,7 @@ router.post('/', auth, async (req, res) => {
     if (existing.rows.length > 0) {
       if (Number(existing.rows[0].used) > 0) {
         await client.query('ROLLBACK');
-        return res.status(409).json({ message: 'Ye controller ID pehle se kisi light se juda hai' });
+        return res.status(409).json({ message: 'This controller ID is a already linked to a light' });
       }
       controllerPk = existing.rows[0].id;
     } else {
@@ -206,16 +206,16 @@ router.put('/:id', auth, async (req, res) => {
     const { pole_number, latitude, longitude, status, is_plugged, dim, control } = req.body;
 
     if (pole_number !== undefined && !String(pole_number).trim()) {
-      return res.status(400).json({ message: 'Pole number khali nahi ho sakta' });
+      return res.status(400).json({ message: 'Pole number cannot be empty' });
     }
     if (badNumber(latitude, -90, 90) || badNumber(longitude, -180, 180)) {
-      return res.status(400).json({ message: 'Latitude ya longitude galat hai' });
+      return res.status(400).json({ message: 'Invalid latitude or longitude' });
     }
     if (badNumber(dim, 0, 100)) {
-      return res.status(400).json({ message: 'DIM 0 se 100 ke beech hona chahiye' });
+      return res.status(400).json({ message: 'DIM must be between 0 and 100' });
     }
     if (status && !['healthy', 'faulty'].includes(status)) {
-      return res.status(400).json({ message: 'Status galat hai' });
+      return res.status(400).json({ message: 'Invalid status' });
     }
 
     const params = [req.params.id];
@@ -232,7 +232,7 @@ router.put('/:id', auth, async (req, res) => {
     );
     if (found.rows.length === 0) {
       await client.query('ROLLBACK');
-      return res.status(404).json({ message: 'Light nahi mili' });
+      return res.status(404).json({ message: 'Light not found' });
     }
 
     await client.query(
@@ -271,7 +271,7 @@ router.put('/:id', auth, async (req, res) => {
     }
 
     await client.query('COMMIT');
-    res.json({ message: 'Light update ho gayi' });
+    res.json({ message: 'Light updated successfully' });
   } catch (err) {
     await client.query('ROLLBACK').catch(() => {});
     console.error(err);
@@ -299,7 +299,7 @@ router.delete('/:id', auth, async (req, res) => {
     );
     if (found.rows.length === 0) {
       await client.query('ROLLBACK');
-      return res.status(404).json({ message: 'Light nahi mili' });
+      return res.status(404).json({ message: 'Light not found' });
     }
 
     const lightId = found.rows[0].id;

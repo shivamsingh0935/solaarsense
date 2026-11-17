@@ -21,7 +21,7 @@ export default function Login() {
       localStorage.setItem('user', JSON.stringify(data.user));
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Server se connect nahi ho paa raha');
+      setError(err.response?.data?.message || 'Unable to connect to the server');
     } finally {
       setLoading(false);
     }
@@ -36,7 +36,7 @@ export default function Login() {
             <span className="text-2xl font-semibold text-gray-800 dark:text-white/90">SolarSense</span>
           </div>
           <h1 className="text-3xl font-semibold text-gray-800 dark:text-white/90">Sign in</h1>
-          <p className="mt-2 text-sm text-gray-500">Apna username aur password daalo.</p>
+          <p className="mt-2 text-sm text-gray-500">Enter your username and password.</p>
 
           {error && <div className="pop-in mt-5 rounded-lg bg-error-50 px-4 py-3 text-sm text-error-600">{error}</div>}
 
@@ -58,7 +58,7 @@ export default function Login() {
               type="button"
               onClick={() => setShowPw(!showPw)}
               className="absolute end-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              aria-label={showPw ? 'Password chhupao' : 'Password dikhao'}
+              aria-label={showPw ? 'Hide the password' : 'Show the password'}
             >
               {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
@@ -72,8 +72,8 @@ export default function Login() {
         <span className="blob bottom-10 end-10 h-72 w-72" style={{ animationDelay: '-4s' }} />
         <div className="relative max-w-sm text-white">
           <Zap size={44} className="float" />
-          <h2 className="mt-6 text-3xl font-semibold">Solar street lights, ek hi jagah se.</h2>
-          <p className="mt-3 text-white/80">Har light ki status, fault aur energy savings live dekho.</p>
+          <h2 className="mt-6 text-3xl font-semibold">Solar street lights, all from one place.</h2>
+          <p className="mt-3 text-white/80">Viw the status, faults, and energy savings for each light in real time.</p>
         </div>
       </div>
     </div>

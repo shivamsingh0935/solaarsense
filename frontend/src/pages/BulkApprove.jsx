@@ -34,10 +34,10 @@ export default function BulkApprove() {
     setBusy(true);
     try {
       const r = await api.post('/approvals/lights/bulk', { ids: picked, action });
-      toast(r.data.updated + (action === 'approve' ? ' light approve ho gayi' : ' light reject ho gayi'));
+      toast(r.data.updated + (action === 'approve' ? ' The light has been approved' : ' The light was rejected'));
       load();
     } catch (err) {
-      toast(err.response?.data?.message || 'Kuch galat ho gaya', 'error');
+      toast(err.response?.data?.message || 'something went wrong', 'error');
     } finally {
       setBusy(false);
     }
@@ -80,7 +80,7 @@ export default function BulkApprove() {
               <tr key={i}><td colSpan="5" className="td"><div className="shimmer h-5 rounded" /></td></tr>
             ))}
             {!loading && lights.length === 0 && (
-              <tr><td colSpan="5" className="td text-center">Koi light approval ke liye pending nahi hai</td></tr>
+              <tr><td colSpan="5" className="td text-center">No lights are pending approval</td></tr>
             )}
             {!loading && lights.map((l) => (
               <tr key={l.id}>

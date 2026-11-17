@@ -15,7 +15,7 @@ export default function Dashboard() {
       .then((r) => { setData(r.data); setError(''); })
       .catch((err) => {
         if (err.response?.status === 401) { localStorage.clear(); window.location.href = '/login'; }
-        else setError('Dashboard data load nahi ho paya');
+        else setError('Dashboard data could not be loaded');
       });
   };
 
@@ -63,7 +63,7 @@ export default function Dashboard() {
   return (
     <div>
       <h1 className="page-title">Hi, {user.name}!</h1>
-      <p className="mt-1 text-sm text-gray-500">Aaj aapke dashboard par ye chal raha hai.</p>
+      <p className="mt-1 text-sm text-gray-500">This is what's happening on your dashboard.</p>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {cards.map((x, i) => <StatCard key={x.label} index={i} {...x} />)}
@@ -103,7 +103,7 @@ export default function Dashboard() {
                     <td className="td">{r.dim}%</td>
                   </tr>
                 ))}
-                {data.lastAddedControllers.length === 0 && <tr><td colSpan="5" className="td text-center">Koi controller nahi mila</td></tr>}
+                {data.lastAddedControllers.length === 0 && <tr><td colSpan="5" className="td text-center">No controller found</td></tr>}
               </tbody>
             </table>
           </div>
@@ -118,7 +118,7 @@ export default function Dashboard() {
               <div key={k}><div className="text-gray-500">{k}</div><div className="mt-1 font-medium text-gray-800 dark:text-white/90">{v}</div></div>
             ))}
           </div>
-        ) : <div className="mt-3 text-gray-500">Data nahi hai</div>}
+        ) : <div className="mt-3 text-gray-500">NO data</div>}
       </div>
     </div>
   );
