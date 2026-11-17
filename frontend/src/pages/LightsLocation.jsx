@@ -97,12 +97,13 @@ export default function LightsLocation() {
 
         {loading ? (
           <div className="shimmer m-5 h-[60vh] rounded-xl" />
-        ) : lights.length === 0 ? (
-          <div className="p-10 text-center text-gray-500">
-            Koi light nahi mili jiski location set hai. SSL Data mein latitude/longitude add karo.
-          </div>
         ) : (
           <div className="relative m-5 mt-0" style={{ height: '60vh' }}>
+            {lights.length === 0 && (
+              <div className="absolute left-1/2 top-3 z-[500] -translate-x-1/2 whitespace-nowrap rounded-full bg-white/95 px-4 py-1.5 text-sm text-gray-600 shadow-md">
+                Abhi koi light nahi — API data aane par markers yahan dikhenge
+              </div>
+            )}
             <MapContainer center={center} zoom={12} style={{ height: '100%', width: '100%', borderRadius: 12 }}>
               <TileLayer
                 attribution="&copy; OpenStreetMap contributors"
