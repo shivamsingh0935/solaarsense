@@ -260,7 +260,7 @@ export default function SslData() {
             </label>
             {editError && <div className="text-sm text-error-600 sm:col-span-2">{editError}</div>}
             <button disabled={busy} className="btn-primary sm:col-span-2">
-              {busy ? <><span className="spinner" /> Saving...</> : 'Update karo'}
+              {busy ? <><span className="spinner" /> Saving...</> : 'Update it'}
             </button>
           </form>
         </div>
